@@ -41,7 +41,7 @@ module Formtastic
 
       def minute_options
           minutes = ("00".."59")
-          options[:minute_step] ? minutes.step(options[:minute_step]) : minutes
+          (options[:minute_step] ? minutes.step(options[:minute_step]) : minutes).to_a
       end
 
       def number_step
