@@ -2,8 +2,8 @@ en:
   formtastic:
     time:
       period:
-        am: AM
-        pm: PM
+        am: "AM"
+        pm: "PM"
   activerecord:
     errors:
       messages:
