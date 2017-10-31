@@ -41,17 +41,20 @@ module Just
           def self.just_define_datetime_picker(field_name, options = {})
             attr_reader "#{field_name}_time_hour"
             attr_reader "#{field_name}_time_minute"
+            attr_reader "#{field_name}_time_period"
             
             validates "#{field_name}_date",        :just_date => true, :allow_nil => true, :allow_blank => false
-            validates "#{field_name}_time_hour",   :numericality => { :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 23, :message => :just_datetime_invalid_time_hour }, :allow_nil => true, :allow_blank => false
+            validates "#{field_name}_time_hour",   :numericality => { :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 12, :message => :just_datetime_invalid_time_hour }, :allow_nil => true, :allow_blank => false
             validates "#{field_name}_time_minute", :numericality => { :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 59, :message => :just_datetime_invalid_time_minute }, :allow_nil => true, :allow_blank => false
 
             after_validation do 
               date_attribute   = "#{field_name}_date".to_sym
               hour_attribute   = "#{field_name}_time_hour".to_sym
               minute_attribute = "#{field_name}_time_minute".to_sym
+              period_attribute = "#{field_name}_time_period".to_sym
               hour_value       = self.send(hour_attribute)
               minute_value     = self.send(minute_attribute)
+              period_value     = self.send(period_attribute)
 
               self.errors[hour_attribute].each{ |e| self.errors[field_name] << e }
               self.errors[minute_attribute].each{ |e| self.errors[field_name] << e }
@@ -98,8 +101,18 @@ module Just
               just_combine_datetime field_name
             end
             
+            define_method "#{field_name}_time_period=" do |v|
+              if v.to_s.empty?
+                instance_variable_set("@#{field_name}_time_period", nil)
+              else
+                instance_variable_set("@#{field_name}_time_period", v.to_s)
+              end
+              
+              just_combine_datetime field_name
+            end
+            
             if options.has_key? :add_to_attr_accessible and options[:add_to_attr_accessible] == true
-              attr_accessible "#{field_name}_date".to_sym, "#{field_name}_time_hour".to_sym, "#{field_name}_time_minute".to_sym
+              attr_accessible "#{field_name}_date".to_sym, "#{field_name}_time_hour".to_sym, "#{field_name}_time_minute".to_sym, "#{field_name}_time_period".to_sym
             end
           end # just_define_datetime_picker
 
@@ -119,7 +132,12 @@ module Just
           def just_combine_datetime(field_name)
             if not instance_variable_get("@#{field_name}_date").nil? and not instance_variable_get("@#{field_name}_time_hour").nil? and not instance_variable_get("@#{field_name}_time_minute").nil?
 
-              combined = "#{instance_variable_get("@#{field_name}_date")} #{sprintf("%02d", instance_variable_get("@#{field_name}_time_hour"))}:#{sprintf("%02d", instance_variable_get("@#{field_name}_time_minute"))}:00"
+              _date = instance_variable_get("@#{field_name}_date")
+              _hour = sprintf("%02d", instance_variable_get("@#{field_name}_time_hour"))
+              _minute = sprintf("%02d", instance_variable_get("@#{field_name}_time_minute"))
+              _period = instance_variable_get("@#{field_name}_time_period")
+
+              combined = "#{_date} #{_hour}:#{_minute}:00 #{_period}"
               begin
                 self.send("#{field_name}=", Time.zone.parse(combined))
 

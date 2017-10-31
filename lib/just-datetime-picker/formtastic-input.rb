@@ -44,6 +44,10 @@ module Formtastic
           (options[:minute_step] ? minutes.step(options[:minute_step]) : minutes).to_a
       end
 
+      def period_options
+          ["AM", "PM"]
+      end
+
       def number_step
           options[:minute_step] || 1
       end
@@ -56,7 +60,7 @@ module Formtastic
           if not hour_value_raw.nil?
             hour_value = hour_value_raw
           elsif not combined_value.nil?
-            hour_value = combined_value.hour
+            hour_value = combined_value.strftime("%I").to_i
           else
             hour_value = "00"
           end
@@ -70,15 +74,26 @@ module Formtastic
             minute_value = "00"
           end
 
+          period_value_raw = builder.object.send("#{method}_time_period")
+          if not period_value_raw.nil?
+            period_value = period_value_raw
+          elsif not combined_value.nil?
+            period_value = combined_value.strftime("%p")
+          else
+            period_value = "AM"
+          end
+
           hour_value   = sprintf("%02d", hour_value)
           minute_value = sprintf("%02d", minute_value)
 
           time_html         = ""
           hour_dom_name     = "#{method}_time_hour"
           minute_dom_name   = "#{method}_time_minute"
+          period_dom_name   = "#{method}_time_period"
           base_dom_classes  = "just-datetime-picker-field just-datetime-picker-time"
           hour_dom_class    = "just-datetime-picker-time-hour"
           minute_dom_class  = "just-datetime-picker-time-minute"
+          period_dom_class  = "just-datetime-picker-time-period"
 
           case time_input
           when :select
@@ -113,6 +128,10 @@ module Formtastic
               builder.text_field("#{minute_dom_name}", input_html_options.merge({ 
                   :class => "#{base_dom_classes} #{minute_dom_class}", 
                   :value => minute_value, :maxlength => 2, :size => 2
+              })) <<
+              builder.select("#{period_dom_name}", period_options, {:selected => period_value}, input_html_options.merge({
+                  :class => "#{base_dom_classes} #{period_dom_class}",
+                  :value => hour_value
               }))
           end
 

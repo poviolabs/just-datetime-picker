@@ -22,3 +22,8 @@ body.active_admin .input.just_datetime_picker select.just-datetime-picker-time-m
   margin-left: 1ex;
 }
 
+body.active_admin .input.just_datetime_picker input.just-datetime-picker-time-period,
+body.active_admin .input.just_datetime_picker select.just-datetime-picker-time-period
+{
+  margin-left: 1ex;
+}
